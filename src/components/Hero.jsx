@@ -1,157 +1,192 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, ChevronRight, Armchair } from 'lucide-react';
 import { supabase } from '../supabase';
+import styles from './Hero.module.css';
 
 const Hero = () => {
   const [products, setProducts] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('id, title, category, badge, images')
           .eq('is_visible', true)
-          .order('display_order', { ascending: true });
-          
+          .order('display_order', { ascending: true })
+          .limit(6);
+
         if (error) throw error;
-        if (data && data.length > 0) {
-          setProducts(data);
-        }
-      } catch (error) {
-        console.error("Error fetching hero products: ", error);
+        setProducts(data || []);
+      } catch (err) {
+        console.error('Hero: error fetching products', err);
+      } finally {
+        setLoading(false);
       }
     };
-    
+
     fetchProducts();
   }, []);
 
+  // Auto-cycle every 2 seconds
   useEffect(() => {
-    if (products.length === 0) return;
-    
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+    if (products.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % products.length);
     }, 2000);
-
-    return () => clearInterval(intervalId);
+    return () => clearInterval(interval);
   }, [products]);
 
-  return (
-    <div style={{ 
-      backgroundColor: '#f8fafc',
-      padding: '6rem 0', 
-      borderBottom: '1px solid #e2e8f0',
-      overflow: 'hidden'
-    }}>
-      <div className="container" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '4rem',
-        alignItems: 'center'
-      }}>
-        {/* Left Side: Text content */}
-        <div style={{ textAlign: 'left' }}>
-          <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1.5rem', color: '#0f172a', letterSpacing: '-0.02em', lineHeight: '1.1' }}>
-            Elevate Your <span style={{ color: '#4f46e5' }}>Workspace</span>
-          </h1>
-          <p style={{ fontSize: '1.25rem', color: '#475569', marginBottom: '2.5rem', lineHeight: '1.6' }}>
-            Discover our premium collection of office seating. Engineered for ergonomic comfort, unmatched durability, and crafted for modern aesthetics.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link 
-              to="/products" 
-              style={{ padding: '0.875rem 2.5rem', backgroundColor: '#4f46e5', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '1.125rem', transition: 'background-color 0.2s', boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.4)' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4338ca'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
-            >
-              Shop Collection
-            </Link>
-            <a 
-              href="#contact" 
-              style={{ padding: '0.875rem 2.5rem', backgroundColor: 'white', color: '#0f172a', textDecoration: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '1.125rem', border: '1px solid #cbd5e1', transition: 'background-color 0.2s', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9' }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'white' }}
-            >
-              Contact Sales
-            </a>
-          </div>
-        </div>
+  const activeProduct = products[activeIndex] || null;
 
-        {/* Right Side: Product Image Slideshow */}
-        <div style={{ position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* Decorative background blob */}
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#e0e7ff',
-            borderRadius: '50%',
-            zIndex: 0,
-            filter: 'blur(40px)',
-            opacity: 0.7
-          }}></div>
-          
-          {/* Image Container */}
-          {products.length > 0 ? (
-            <div 
-              key={currentIndex} // Add key to force re-render for simple transition if needed
-              style={{ 
-                position: 'relative', 
-                width: '100%',
-                zIndex: 1,
-                transform: 'perspective(1000px) rotateY(-5deg)',
-                transition: 'all 0.5s ease',
-                animation: 'fadeIn 0.5s ease-in-out'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'perspective(1000px) rotateY(0deg) scale(1.02)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'perspective(1000px) rotateY(-5deg)'}
-            >
-              <img 
-                src={products[currentIndex].images && products[currentIndex].images.length > 0 ? products[currentIndex].images[0] : '/hero_product.jpg'} 
-                alt={products[currentIndex].title} 
-                style={{ 
-                  width: '100%', 
-                  height: '400px', 
-                  objectFit: 'cover',
-                  borderRadius: '24px',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                  display: 'block'
-                }} 
-              />
-              {/* Name Overlay */}
-              <div style={{
-                position: 'absolute',
-                bottom: '20px',
-                left: '20px',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '50px',
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                fontWeight: '600',
-                color: '#0f172a',
-                backdropFilter: 'blur(4px)'
-              }}>
-                {products[currentIndex].title}
-              </div>
+  const containerVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+  };
+
+  const itemVariants = {
+    hidden: { y: 24, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } },
+  };
+
+  return (
+    <section className={styles.heroSection}>
+      <div className={styles.innerGrid}>
+        {/* ── LEFT: Text Side ── */}
+        <motion.div
+          className={styles.textSide}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants} className={styles.badge}>
+            <span className={styles.badgePulse} />
+            Office Furniture & Fabrication, Patna
+          </motion.div>
+
+          <motion.h1 variants={itemVariants} className={styles.title}>
+            Built for Work,
+            <span className={styles.titleHighlight}>Made to Last</span>
+          </motion.h1>
+
+          <motion.p variants={itemVariants} className={styles.subtitle}>
+            From premium ergonomic chairs to sturdy office tables, benches, and custom fabrication work — Aaditya Industries manufactures quality furniture right here in Patna, Bihar.
+          </motion.p>
+
+          <motion.div variants={itemVariants} className={styles.divider} />
+
+          <motion.div variants={itemVariants} className={styles.buttonGroup}>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <Link to="/products" className={styles.primaryButton}>
+                Browse Collection <ArrowRight size={17} />
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <a href="#contact" className={styles.secondaryButton}>
+                Get a Free Quote
+              </a>
+            </motion.div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className={styles.stats}>
+            <div className={styles.statItem}>
+              <span className={styles.statIcon}>🪑</span>
+              <span className={styles.statNum}>500+</span>
+              <span className={styles.statLabel}>Chairs Sold</span>
             </div>
-          ) : (
-            <div style={{ position: 'relative', zIndex: 1, color: '#94a3b8' }}>Loading products...</div>
-          )}
-          
-          {/* Inline styles for keyframe animation to make the image transition smooth */}
-          <style>{`
-            @keyframes fadeIn {
-              from { opacity: 0.8; transform: perspective(1000px) rotateY(-5deg) scale(0.98); }
-              to { opacity: 1; transform: perspective(1000px) rotateY(-5deg) scale(1); }
-            }
-          `}</style>
+            <div className={styles.statItem}>
+              <span className={styles.statIcon}>🔩</span>
+              <span className={styles.statNum}>4+</span>
+              <span className={styles.statLabel}>Product Lines</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statIcon}>✅</span>
+              <span className={styles.statNum}>100%</span>
+              <span className={styles.statLabel}>Quality Check</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── RIGHT: Product Showcase (Single Cycling Card) ── */}
+        <div className={styles.showcaseSide}>
+          {loading ? (
+            <div className={styles.skeletonCard} />
+          ) : activeProduct ? (
+            <Link to="/products" className={styles.showcaseCard}>
+              {/* Cycling Image */}
+              <div className={styles.showcaseImageWrapper}>
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={`${activeProduct.id}-${activeIndex}`}
+                    src={activeProduct.images?.[0] || ''}
+                    alt={activeProduct.title}
+                    className={styles.showcaseImage}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </AnimatePresence>
+
+                {/* Fallback if no image */}
+                {(!activeProduct.images || activeProduct.images.length === 0) && (
+                  <div className={styles.showcaseFallback}>
+                    <Armchair size={64} color="#475569" />
+                  </div>
+                )}
+
+                {/* Badge overlay */}
+                {activeProduct.badge && (
+                  <motion.span
+                    key={`badge-${activeIndex}`}
+                    className={styles.showcaseBadge}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    {activeProduct.badge}
+                  </motion.span>
+                )}
+              </div>
+
+              {/* Product Info below image */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`info-${activeIndex}`}
+                  className={styles.showcaseInfo}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  <span className={styles.showcaseName}>{activeProduct.title}</span>
+                  {activeProduct.category && (
+                    <span className={styles.showcaseCategory}>{activeProduct.category}</span>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dot indicators */}
+              <div className={styles.dots}>
+                {products.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
+                    onClick={(e) => { e.preventDefault(); setActiveIndex(i); }}
+                    aria-label={`Show product ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </Link>
+          ) : null}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
