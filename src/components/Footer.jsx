@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, ChevronRight, MessageCircle, ExternalLink } from 'lucide-react';
 
 const Footer = () => {
@@ -10,7 +11,7 @@ const Footer = () => {
         {/* Brand Column */}
         <div>
           <div style={{ display: 'inline-block', backgroundColor: 'white', padding: '10px 20px', borderRadius: '8px', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
-            <img src="/logo.png" alt="Aaditya Industries" style={{ height: '45px', display: 'block' }} />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Aaditya Industries" style={{ height: '45px', display: 'block' }} />
           </div>
           <p style={{ color: '#94a3b8', lineHeight: '1.7', fontSize: '1.05rem', marginBottom: '2rem' }}>
             Premium office seating manufacturer based in Patna, Bihar. We blend ergonomic science with modern aesthetics to build chairs that last a lifetime.
@@ -26,9 +27,9 @@ const Footer = () => {
               { name: 'Products Catalog', path: '/products' },
             ].map((link, idx) => (
               <li key={idx}>
-                <a href={link.path} style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = '#fff'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>
+                <Link to={link.path} style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = '#fff'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>
                   <ChevronRight size={16} style={{ color: '#4f46e5' }} /> {link.name}
-                </a>
+                </Link>
               </li>
             ))}
             <li>
