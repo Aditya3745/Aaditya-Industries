@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Plus, LogOut, UploadCloud, Edit2, X, MessageSquare, Package, CheckCircle, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Plus, LogOut, UploadCloud, Edit2, X, MessageSquare, Package, CheckCircle, ArrowUp, ArrowDown, Eye, EyeOff, Printer } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('products'); // 'products' or 'inquiries'
@@ -199,6 +199,28 @@ const AdminDashboard = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--surface)', minHeight: '100vh', padding: '2rem' }}>
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-section, #print-section * {
+            visibility: visible;
+          }
+          #print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            box-shadow: none !important;
+          }
+          .hide-on-print {
+            display: none !important;
+          }
+        }
+      `}</style>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Header */}
@@ -305,14 +327,19 @@ const AdminDashboard = () => {
             </div>
 
             {/* Product List */}
-            <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Live Catalog ({products.length})</h2>
+            <div id="print-section" style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Live Catalog ({products.length})</h2>
+                <button className="hide-on-print" onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  <Printer size={16} /> Print Catalog
+                </button>
+              </div>
               {products.length === 0 ? <p>No products yet.</p> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {products.map((product, index) => (
                     <div key={product.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: editingId === product.id ? '2px solid var(--primary)' : '1px solid #e5e7eb', borderRadius: '4px', opacity: product.is_visible ? 1 : 0.6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div className="hide-on-print" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                           <button onClick={() => moveProduct(index, -1)} disabled={index === 0} style={{ border: 'none', background: 'none', cursor: index === 0 ? 'default' : 'pointer', color: index === 0 ? '#cbd5e1' : '#64748b' }}><ArrowUp size={16} /></button>
                           <button onClick={() => moveProduct(index, 1)} disabled={index === products.length - 1} style={{ border: 'none', background: 'none', cursor: index === products.length - 1 ? 'default' : 'pointer', color: index === products.length - 1 ? '#cbd5e1' : '#64748b' }}><ArrowDown size={16} /></button>
                         </div>
@@ -326,7 +353,7 @@ const AdminDashboard = () => {
                           <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>{product.category} &bull; {product.images?.length || 0} Images</p>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="hide-on-print" style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => toggleVisibility(product)} style={{ border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem' }} title="Toggle Visibility">
                           {product.is_visible ? <Eye size={18} /> : <EyeOff size={18} />}
                         </button>
