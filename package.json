@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://aditya3745.github.io/Aaditya-Industries",
+  "homepage": "https://aadityaindustries.online",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
